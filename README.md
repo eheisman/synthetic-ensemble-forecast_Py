@@ -2,4 +2,10 @@
 Repository for Python-based synthetic ensemble forecasting codebase _(under construction)_   
 
 At the moment, the source code (./src) contains the original transfer of the R-based synthetic forecast code that Scott Steinschneider (ss) put together, originally in jupyter notebooks (./src/jupyter_ss_original). The regular python script based version of this code is in (./src/ss_original).    
-The scripts in the main ./src repository are being updated to an efficient codebase utilizing numba compilers for optimization; scripts will be added as they are completed. Until a completed README is drafted, the basic flow of the scripts can be referenced in the 
+    
+The scripts in the main ./src repository are being updated to an efficient codebase utilizing numba compilers for optimization; scripts will be added as they are completed.  
+   
+You can run the optimization based on the Prado Dam data input file (./data/ADO_hefs_gefs_daily.npz) with the new scripts here: ./src/optimize_synthetic_forecasts_numba.py. This script calls the ./src/syn_gen_opt_numba.py helper functions.
+
+
+Until a completed README is drafted, the basic flow of the scripts can be referenced in the https://github.com/zpb4/Synthetic-Forecast-v2-FIRO-DISES repository
