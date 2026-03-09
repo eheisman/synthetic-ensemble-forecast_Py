@@ -6,15 +6,12 @@ Created on Wed Feb  4 15:20:34 2026
 """
 
 import os
-import re
 from pathlib import Path
-from datetime import datetime
 import numpy as np
 import pandas as pd
-import multiprocessing as mp
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
-import seaborn as sns
+from util import split_return
 
 max_leads = 15
 
@@ -24,12 +21,7 @@ sites = ['ADOC1']
 in_dir = Path('./raw_data/')
 out_dir = Path('./data/')
 
-def split_return(x,match):
-    spl_tex = x.split('.')
-    out = False
-    if spl_tex[0] == match:
-        out = True
-    return out
+
 #---------------------- Read and process obs data ------------------------------
 obs_file = 'observed_flows.csv'
 obs = pd.read_csv(in_dir / obs_file,header=0,index_col=0) 
