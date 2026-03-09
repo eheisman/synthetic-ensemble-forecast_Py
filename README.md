@@ -1,7 +1,7 @@
 # synthetic-ensemble-forecast_Py
 Repository for Python-based synthetic ensemble forecasting codebase that is derived from the R-codebase linked below. This synthetic ensemble forecast generation approach was developed in Brodeur et al. (2025) and relies on a resampling and scaling approach to generate ensemble forecasts for any plausible streamflow timeseries (e.g. historical observations, simulations, projections) for a given forecast site, given a sufficiently long hindcast dataset for fitting of the model. Fitting of the model to the available hindcast data involves the calibration of a curve that modulates the sampling and rescaling procedure across lead times. This fitting procedures uses a loss function that seeks to minimize the skill differences between the generated synthetic forecasts and the original hindcasts across lead times, ensuring that the synthetic forecasts accurately represent the skill attributes of the original hindcasts
 
-Synthetic Forecast version 2 [https://github.com/zpb4/Synthetic-Forecast-v2-FIRO-DISES](https://github.com/zpb4/Synthetic-Forecast-v2-FIRO-DISES)    
+R-based synthetic ensemble forecast model: [https://github.com/zpb4/Synthetic-Forecast-v2-FIRO-DISES](https://github.com/zpb4/Synthetic-Forecast-v2-FIRO-DISES)    
 
 Brodeur, Z. P., Taylor, W., Herman, J. D., & Steinschneider, S. (2025). Synthetic Ensemble Forecasts: Operations‐Based Evaluation and Inter‐Model Comparison for Reservoir Systems Across California. Water Resources Research, 61(e2024WR039324). https://doi.org/10.1029/%25202024WR039324
 
