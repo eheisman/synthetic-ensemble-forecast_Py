@@ -48,9 +48,13 @@ Generates stochastic ensemble forecast samples against the provided streamflow s
 ### 4. USACE HEC-WAT synthetic forecast generation 
 Employs a similar synthetic generation routine to Step 3, but setup to ingest .json configuration files from HEC-WAT hydrologic sampler routine and read/write .dss file formats for input/output. Generates a single synthetic forecast sequence for each synthetic streamflow event provided in the HEC-WAT .dss file and outputs a daily streamflow and synthetic forecast .dss file for each events. In the provided example for ADO/ADOC1, the input .dss file includes 50 events.
 - ./src/create_synthetic_forecasts_hec-wat_fra.py - main synthetic ensemble forecast generation script that leverages HEC-WAT .dss file I/O; calls the syn_gen_hec_wat_fra.py script (1-2 min for the 50 event ADO/ADOC1 sample from HEC-WAT)
-- ./src/syn_gen_hec_wat_fra.py - functions to support the main generation
+- ./src/syn_gen_hec_wat_fra.py - functions to support the synthetic ensemble forecast generation procedure for HEC-WAT data inputs
 
-### 5. Miscellaneous
+### 5. Synthetic forecast verification
+A set of plotting routines to compare synthetic forecasts with their original hindcast dataset to ensure parity in skill metrics and ensemble forecast behaviors. _NOTE: this script is under development_
+- ./src/diagnose_synthetic_forecasts - series of plotting routines for visualization and comparison between synthetic forecasts and original hindcasts
+
+### 6. Miscellaneous
 - ./src/util.py - various helper functions 
 
 ### Contact
