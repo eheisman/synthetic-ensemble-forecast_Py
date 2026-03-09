@@ -1,0 +1,29 @@
+{
+    "Indices": {
+        "Event Number": 1,
+        "Lifecycle Number": 1,
+        "Realization Number": 0
+    },
+    "Outputs": {
+        "DSS File": "C:\\projects\\FIRO\\Prado_WAT_FIRO_Dev\\Watersheds\\PradoCaseStudy_2025-06-05_Tested\\runs\\HFO\\FRA_50yr\\realization 1\\lifecycle 1\\HFO-FRA_50yr.dss",
+        "F Part": "C:000001|HFO:FRA_50yr:Scripting-GenFcsts",
+        "Run Directory": "C:\\projects\\FIRO\\Prado_WAT_FIRO_Dev\\Watersheds\\PradoCaseStudy_2025-06-05_Tested\\runs\\HFO\\FRA_50yr\\realization 1\\lifecycle 1\\event 1\\Scripting\\",
+        "Simulation Name": "HFO-FRA_50yr",
+        "Watershed Directory": "C:\\projects\\FIRO\\Prado_WAT_FIRO_Dev\\Watersheds\\PradoCaseStudy_2025-06-05_Tested\\"
+    },
+    "Randoms": {
+        "Event Random": 0.7198339571306447,
+        "Lifecycle Random": 0.7198339571306447,
+        "Realization Random": 0.7198339571306447
+    },
+    "TimeWindow": {
+        "End Time": "22Nov1950 2345",
+        "Start Time": "18Sep1950 2345"
+    },
+    "locations": [
+        {
+            "name": "Prado",
+            "param": "Flow"
+        }
+    ]
+}
