@@ -107,7 +107,7 @@ def writeScriptConfig(alt, opts):
 
 	# create list of locations mapped in
 	locations = alt.getInputDataLocations()
-	config["locations"] = list()
+	config["Locations"] = list()
 	for loc in locations:
 		locDict = dict()
 		locDict["name"] = loc.getName()
@@ -118,7 +118,7 @@ def writeScriptConfig(alt, opts):
 		#locDict["dssPath"] = loc.getDssPath()
 		#alt.addComputeWarningMessage(loc.getName())
 		#alt.addComputeMessage(loc.getParameter())
-		config["locations"].append(locDict)
+		config["Locations"].append(locDict)
 
 	# write to file
 	d = getOutputDir(opts)

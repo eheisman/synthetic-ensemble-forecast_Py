@@ -60,7 +60,7 @@ class WatCompute:
         self.lifecycle_compute = True  # vs false if we want to do per-event
         
         # model locations
-        self.location = data["Location"]
+        self.location = data["Locations"][0]
 
 class GeneratorSettings:
 
@@ -80,7 +80,7 @@ class SynFcstGenerator:
 
 
     def compute(self):
-        mp = self.model_params
+        mp = self.model_parameters
 
         #set random seed for generation process
         random.seed(self.compute_options.lifecycle_seed)
