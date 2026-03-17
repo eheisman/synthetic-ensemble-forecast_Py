@@ -100,7 +100,7 @@ def writeScriptConfig(alt, opts):
 	watershedDir = opts.getRunDirectory().split("runs")[0]
 	outputDict["Watershed Directory"] = watershedDir
 	outputDict["Simulation Name"] = opts.getSimulationName()
-	outputDict["Out directory"] = getOutputDir(opts)
+	outputDict["Out Directory"] = getOutputDir(opts)
 	outputDict["DSS File"] = opts.getDssFilename()
 	outputDict["F Part"] = opts.getFpart()
 	config["Outputs"] = outputDict
