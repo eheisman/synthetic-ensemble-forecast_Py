@@ -2,6 +2,10 @@
 .Rhistory
 .future
 
+*.pyc
+
+/tmp
+
 /data/.Rhistory
 /data/.DS_Store
 
@@ -21,3 +25,5 @@
 *.csv
 *.pdf
 *.db
+*.bak
+*.dsc

@@ -1,0 +1,19 @@
+{ 
+    "loc": "ADO",
+    "keysite_label": "ADOC1",
+    "gen_site": "ADOC1",
+    "max_lds": 15,
+    "opt_pct": 0.99,
+    "fixed_kk": true,
+    "fixed_knn_pwr": true,
+    "fix_kk": 20,
+    "fix_knn_pwr": -0.5,
+    "fit_gen_strategy": "default",
+    "st_fit": "1990-10-01",
+    "en_fit": "2018-09-30",
+    "files": {
+        "fit_file": "optimized-parameters_keysite=ADOC1_opt-pct=0.99.pkl",
+        "obs_file": "ADO_hefs_gefs_daily.npz"
+    },
+    "fit_type": "WAT"
+}

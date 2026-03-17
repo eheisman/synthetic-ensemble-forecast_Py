@@ -1,0 +1,30 @@
+{
+    "Indices": {
+        "Event Number": 1,
+        "Lifecycle Number": 1,
+        "Realization Number": 0
+    },
+    "Outputs": {
+        "DSS File": "./test/wat/resources/HFO-FRA_50yr.dss",
+        "F Part": "C:000001|HFO:FRA_50yr:Scripting-GenFcsts",
+        "Run Directory": "./tmp/test_watershed/runs",
+        "Out Directory": "./tmp/test_watershed/runs/test_alt/test_ap/realization 1/lifecycle 1/",
+        "Simulation Name": "HFO-FRA_50yr",
+        "Watershed Directory": "./tmp/test_watershed"
+    },
+    "Randoms": {
+        "Event Random": 0.7198339571306447,
+        "Lifecycle Random": 0.7198339571306447,
+        "Realization Random": 0.7198339571306447
+    },
+    "TimeWindow": {
+        "End Time": "22Nov1950 2345",
+        "Start Time": "18Sep1950 2345"
+    },
+    "Location": {
+        "name": "Prado",
+        "param": "Flow",
+        "dss_pathname": "//Prado_IN-combined/Flow//15Minute/C:000001|HFO:FRA_50yr:Scripting-Hydrograph_unscaler/"
+    }
+}
+
