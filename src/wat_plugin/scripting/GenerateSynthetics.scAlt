@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScriptingAlt Name="GenFcsts">
+<ScriptingAlt Name="SynFcst">
   <Description>
     <desc cnt="0" value="Generates forecasts via an script using the command line interface -- Prado Example.  EDIT THIS FILE IN WAT!" />
   </Description>
-  <ScriptFile>scripts/RunRCmd.py</ScriptFile>
-  <TimeStep>15MIN</TimeStep>
+  <ScriptFile>scripting/GenerateSynthetics.py</ScriptFile>
+  <TimeStep>1DAY</TimeStep>
   <DataLocations>
-    <DataLocation Name="Prado" Class="hec2.model.DataLocation" DssPath="//Prado/Flow//15MIN/alt:ap:Scripting-GenFcsts/" ComputeType="Computed" Model="Scripting-Hydrograph_unscaler" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
-      <ModelAlternative Name="GenFcsts" Program="Scripting" />
+    <DataLocation Name="Prado" Class="hec2.model.DataLocation" DssPath="//Prado/Flow//15MIN/alt:ap:Scripting-SynFcsts/" ComputeType="Computed" Model="Scripting-Hydrograph_unscaler" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcsts" Program="Scripting" />
       <DownStreamLocation>
         <DataLocation Name="Prado_IN-combined" Class="hec2.model.DataLocation" DssPath="//Prado_IN-combined/Flow//15MIN/C:000050|HFO:FRA_50yr:Scripting-Hydrograph_unscaler/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
           <ModelAlternative Name="Hydrograph_unscaler" Program="Scripting" />

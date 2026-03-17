@@ -30,17 +30,58 @@ from syn_gen_hec_wat_fra import syn_gen_hec_wat_fra,obs_fwd_fun
 HecDss.set_global_debug_level(2) 
 
 
+class WatCompute:
+    """ class to wrap config file to get properties
+
+    this mostly wraps the .json file, but gives us a tiny bit of abstraction
+    """
+    def __init__(self, filename:str):
+        """ constructor to read WAT model configuration for this compute
+        """
+        data = json.load(open(filename, 'r'))
+
+        # general WAT settings
+        self.watershed = data['Outputs']['Watershed Directory']
+        self.outFPart = data['Outputs']['F Part'] 
+        self.runDirectory = data['Outputs']['Run Directory']  # lifecycle folder
+        self.outDirectory = data['Outputs']['Out Directory']  # where to write data, may be the same.
+        self.simName = data['Outputs']['Simulation Name']
+        self.simfile = str(Path(self.outDirectory, "%s.dss" % self.simName)) # lifecycle dss
+        # set FRM settings
+        #retrieve key json config elements
+        self.realization = data['Indices']['Realization Number']
+        self.lifecycle = data['Indices']['Lifecycle Number']
+        self.event = data['Indices']['Event Number']
+
+        self.realization_seed = data['Randoms']['Realization Random']
+        self.lifecycle_seed = data['Randoms']['Lifecycle Random']
+        self.event_seed = data['Randoms']['Event Random']
+
+        self.lifecycle_compute = True  # vs false if we want to do per-event
+        
+        # model locations
+        self.location = data["Location"]
+
+class GeneratorSettings:
+
+    def __init__(self):
+        self.workers = 10 # cores we want to use
+
+
 class SynFcstGenerator:
     """ main class for WAT synthetic forecasts
     """
-    def __init__(self, config_filename:str):
+    def __init__(self, compute_options:WatCompute, model_parameters:ModelParams):
         """ loads up the generator but does not compute
         """
-        self.compute_options = WatCompute(config_filename)
+        self.compute_options = compute_options
+        self.model_parameters = model_parameters
         self._genconfig = GeneratorSettings()
 
 
-    def compute(self, mp:ModelParams):
+    def compute(self):
+        mp = self.model_params
+
         #set random seed for generation process
         random.seed(self.compute_options.lifecycle_seed)
         """ runs the generation process
@@ -236,7 +277,7 @@ class SynFcstGenerator:
             obs_values = obs_fwd_gen_mat[i,:,0] * 1000      #reset to cfs
             obsValuesAsList = obs_values.tolist()
             outTimeSeriesForThisTrace = RegularTimeSeries.create(obsValuesAsList, 
-                data_type='PER-AVE',times=times, start_date=fcst_issue_dates[evt_num][0], interval='1Day', units="cfs", path=obs_outpath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 
+                data_type='PER-AVER',times=times, start_date=fcst_issue_dates[evt_num][0], interval='1Day', units="cfs", path=obs_outpath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 
 
             fPartSuffix = self.compute_options.outFPart.split("|")[-1]
 
@@ -268,7 +309,7 @@ class SynFcstGenerator:
                         traceValues = par_out[i][j,:,k] * 1000                      #reset values to kcfs
                         traceValuesAsList = traceValues.tolist()                    #RegularTimeSeries requires the flow values as a list
                         outTimeSeriesForThisTrace = RegularTimeSeries.create(traceValuesAsList, 
-                            data_type='PER-AVE',times=times, start_date=fcst_issue_dates[evt_num][j], interval=ePart, units="cfs", path=dssOutPath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 
+                            data_type='PER-AVER',times=times, start_date=fcst_issue_dates[evt_num][j], interval=ePart, units="cfs", path=dssOutPath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 
                         outDss.put(outTimeSeriesForThisTrace)
             outDss.close()
 
@@ -277,41 +318,3 @@ class SynFcstGenerator:
  
         # if compute succeeds:
         return True
-
-
-class WatCompute:
-    """ class to wrap config file to get properties
-
-    this mostly wraps the .json file, but gives us a tiny bit of abstraction
-    """
-    def __init__(self, filename:str):
-        """ constructor to read WAT model configuration for this compute
-        """
-        data = json.load(open(filename, 'r'))
-
-        # general WAT settings
-        self.watershed = data['Outputs']['Watershed Directory']
-        self.outFPart = data['Outputs']['F Part'] 
-        self.runDirectory = data['Outputs']['Run Directory']  # lifecycle folder
-        self.outDirectory = data['Outputs']['Out Directory']  # where to write data, may be the same.
-        self.simName = data['Outputs']['Simulation Name']
-        self.simfile = str(Path(self.outDirectory, "%s.dss" % self.simName)) # lifecycle dss
-        # set FRM settings
-        #retrieve key json config elements
-        self.realization = data['Indices']['Realization Number']
-        self.lifecycle = data['Indices']['Lifecycle Number']
-        self.event = data['Indices']['Event Number']
-
-        self.realization_seed = data['Randoms']['Realization Random']
-        self.lifecycle_seed = data['Randoms']['Lifecycle Random']
-        self.event_seed = data['Randoms']['Event Random']
-
-        self.lifecycle_compute = True  # vs false if we want to do per-event
-        
-        # model locations
-        self.location = data["Location"]
-
-class GeneratorSettings:
-
-    def __init__(self):
-        self.workers = 10 # cores we want to use
