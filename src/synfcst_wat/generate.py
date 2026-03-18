@@ -52,6 +52,7 @@ class WatCompute:
         self.realization = data['Indices']['Realization Number']
         self.lifecycle = data['Indices']['Lifecycle Number']
         self.event = data['Indices']['Event Number']
+        self.nEventsPerLifecycle = data['Indices']["Events Per Lifecycle"]
 
         self.realization_seed = data['Randoms']['Realization Random']
         self.lifecycle_seed = data['Randoms']['Lifecycle Random']
@@ -87,7 +88,7 @@ class SynFcstGenerator:
         """ runs the generation process
         """
         workers = self._genconfig.workers
-        n_events = 50 # TODO: retreive events from self.compute_options
+        n_events = self.compute_options.nEventsPerLifecycle
 
         watershed_dir = Path(self.compute_options.watershed)
         opt_dir = watershed_dir / "synfcst"  # set this to the watershed's synfcst model directory
@@ -177,6 +178,12 @@ class SynFcstGenerator:
         parts = dss_pathname.split('/')[1:]
         alphabet = [chr(i) for i in range(ord('a'), ord('z') + 1)][:len(parts)]
         part_dict = {alphabet[i]:parts[i] for i in range(len(parts))}
+        # deal with DSS v6 pathnames coming in - likely WAT model-linking/scripting bug
+        part_dict["e"] = part_dict["e"].replace("MIN", "Minute")
+        part_dict["e"] = part_dict["e"].replace("MON", "Month")
+        part_dict["e"] = part_dict["e"].replace("HR", "Hour")
+        dss_pathname = "/".join(["", part_dict["a"], part_dict["b"], part_dict["c"], "", part_dict["e"], part_dict["f"],""])
+        print(dss_pathname)
 
         data = dss.get(dss_pathname)
         print(data.start_date,data.units,data.data_type)
@@ -199,7 +206,10 @@ class SynFcstGenerator:
         for i in range(n_events):
             i_idx = i+1
             evt_num = f'{i_idx:06}'
-            data = dss.get('//Prado_IN-combined/Flow//15Minute/C:%s|HFO:FRA_50yr:Scripting-Hydrograph_unscaler/' %(evt_num))
+            event_f_part = "C:%s|%s" % (evt_num, part_dict['f'].split("|")[-1])
+            event_dss_pathname = "/".join(["", part_dict['a'], part_dict['b'], part_dict['c'], "", part_dict['e'], event_f_part, ""])
+            print(event_dss_pathname)
+            data = dss.get(event_dss_pathname)
             dtg = pd.to_datetime(data.times)
             flow_kcfs = data.values / 1000
 
@@ -271,15 +281,17 @@ class SynFcstGenerator:
             dss_obs_outfile = dss_outfile
             outdss = Path(self.compute_options.outDirectory, dss_outfile)
             
+            fPartSuffix = self.compute_options.outFPart.split("|")[-1]
+
             #output each daily-aggregated synthetic observation to a DSS file
-            obs_outpath = '//Prado_IN-combined/Flow//1Day/C:%s|HFO:FRA_50yr:Scripting-Hydrograph_unscaler/' %(evt_num)
+            obs_outpath = "/".join(["", part_dict["a"], part_dict["b"], part_dict["c"] + "-synobs", "", "1Day", "C:%s|%s" % (evt_num, fPartSuffix), ""])
             times = fcst_issue_dates[evt_num]
             obs_values = obs_fwd_gen_mat[i,:,0] * 1000      #reset to cfs
             obsValuesAsList = obs_values.tolist()
             outTimeSeriesForThisTrace = RegularTimeSeries.create(obsValuesAsList, 
                 data_type='PER-AVER',times=times, start_date=fcst_issue_dates[evt_num][0], interval='1Day', units="cfs", path=obs_outpath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 
 
-            fPartSuffix = self.compute_options.outFPart.split("|")[-1]
+            
 
             #output the synthetic forecast sequence for each synthetic event to a DSS file for HEC-WAT ingest
             with HecDss(str(outdss)) as outDss:

@@ -50,6 +50,8 @@ def generateSynthetics(opts, configFile, synFcstScript=None, args=[], shell=Fals
 def getOutputDir(opts):
 	d = os.path.dirname(opts.getRunDirectory())
 	d = d.replace("Scripting", "")
+	if PER_LIFECYLCE_COMPUTE:
+		d = d.replace("event 1", "")
 	if not os.path.exists(d):
 		os.mkdir(d)
 	return d
@@ -79,6 +81,7 @@ def writeScriptConfig(alt, opts):
 	## Save realization and event seeds
 	if opts.isFrmCompute():
 		config["ComputeType"] = "FRM"
+		eventList = opts.getEventList()
 		# not technically seeds, but these can be used to generate a seed for the R script
 		randomDict = dict()
 		randomDict["Event Random"] = opts.getEventRandom()
@@ -90,6 +93,7 @@ def writeScriptConfig(alt, opts):
 		indexDict["Event Number"] = opts.getCurrentEventNumber()
 		indexDict["Lifecycle Number"] = opts.getCurrentLifecycleNumber()
 		indexDict["Realization Number"] = opts.getCurrentRealizationNumber()
+		indexDict["Events Per Lifecycle"] = len(eventList)
 		config["Indices"] = indexDict
 	else:
 		config["ComputeType"] = "Deterministic"
@@ -112,18 +116,14 @@ def writeScriptConfig(alt, opts):
 		locDict = dict()
 		locDict["name"] = loc.getName()
 		locDict["param"] = loc.getParameter()
-		locDict["dss_pathname"] = loc.getDssPath()
-
-		#locDict["type"] = loc.getType()
-		#locDict["dssPath"] = loc.getDssPath()
-		#alt.addComputeWarningMessage(loc.getName())
-		#alt.addComputeMessage(loc.getParameter())
+		locDict["dss_pathname"] = loc.getLinkedToLocation().getDssPath()
+		alt.addComputeMessage("linked input \"%s/%s\" to %s" % (locDict["name"], locDict["param"], locDict["dss_pathname"]))
 		config["Locations"].append(locDict)
 
 	# write to file
 	d = getOutputDir(opts)
-	if PER_LIFECYLCE_COMPUTE:
-		os.path.join(d, "event %d" % opts.getCurrentEventNumber())
+	#if not PER_LIFECYLCE_COMPUTE:
+	#	os.path.join(d, "event %d" % opts.getCurrentEventNumber())
 	configFilename = os.path.join(d, "SynFcstConfig.json") 
 	with open(configFilename, 'w') as out:
 		out.write(json.dumps(config))
