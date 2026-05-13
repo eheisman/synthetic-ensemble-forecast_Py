@@ -23,8 +23,9 @@ def main():
                                  epilog="see ...")
 
     # 	cmdLine += [pythonExe, synFcstScript, fcstConfigFilename, modelParametersFilename]
-    parser.add_argument("COMPUTE_OPTIONS", help="compute options that determines compute dimensions")
-    parser.add_argument("MODEL_PARAMETERS", help="fitting parameters for generating forecasts")
+    # remove "help" as these are optional args now?
+    parser.add_argument("COMPUTE_OPTIONS")# , help="compute options that determines compute dimensions")
+    parser.add_argument("MODEL_PARAMETERS") #, help="fitting parameters for generating forecasts")
     parser.add_argument("--debug")
 
     args = parser.parse_args()

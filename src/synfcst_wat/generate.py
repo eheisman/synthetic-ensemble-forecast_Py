@@ -277,8 +277,9 @@ class SynFcstGenerator:
             i_idx = i+1
             evt_num = f'{i_idx:06}' #0-padded event number
             #outfiles for the synthetic forecast and daily synthetic obs
-            dss_outfile = "%s-%s-event_%s" % (mp.gen_site, "fcst", evt_num)
-            dss_obs_outfile = dss_outfile
+            #dss_outfile = "%s-%s-event_%s" % (mp.gen_site, "fcst", evt_num)
+            dss_outfile = "syn-fcst-event_%s" % evt_num
+            dss_obs_outfile = dss_file #dss_outfile
             outdss = Path(self.compute_options.outDirectory, dss_outfile)
             
             fPartSuffix = self.compute_options.outFPart.split("|")[-1]
