@@ -58,15 +58,17 @@ class WatCompute:
         self.lifecycle_seed = data['Randoms']['Lifecycle Random']
         self.event_seed = data['Randoms']['Event Random']
 
-        self.lifecycle_compute = True  # vs false if we want to do per-event
+        self.lifecycle_compute = False  # vs false if we want to do per-event
         
         # model locations
+        # TODO: handle more than one location!
         self.location = data["Locations"][0]
 
 class GeneratorSettings:
+    # DEFAULT_MAX_WORKERS = 10
 
-    def __init__(self):
-        self.workers = 10 # cores we want to use
+    def __init__(self, max_workers):
+        self.workers = min(10, max_workers) # use number of cores limited by events
 
 
 class SynFcstGenerator:
@@ -77,7 +79,8 @@ class SynFcstGenerator:
         """
         self.compute_options = compute_options
         self.model_parameters = model_parameters
-        self._genconfig = GeneratorSettings()
+        # can't use more than n workers
+        self._genconfig = GeneratorSettings(self.compute_options.nEventsPerLifecycle)
 
 
     def compute(self):
@@ -98,12 +101,14 @@ class SynFcstGenerator:
 
         ## Loading data
         obs_data = np.load(data_dir / mp.files["obs_file"], allow_pickle=True)
+
         #hefs array [n_sites x n_obs x n_leads x n_ens]
         hcst = obs_data['hefs']
         #obs forward (perfect forecast array) [n_sites x n_obs x n_leads]  **note: n_leads is 1 longer than hefs_array because col 0 is day t observations in obs fwd
         obs_fwd = obs_data['obs_fwd']
         #site index  
         sites = obs_data['sites']
+
         #date/time vectors
         obs_fwd_dtg = obs_data['obs_fwd_dtg']
         hcst_dtg = obs_data['hefs_dtg']
@@ -112,6 +117,7 @@ class SynFcstGenerator:
 
         ## fit file
         opt_pars = pickle.load(open(opt_dir / mp.files["fit_file"], 'rb'), encoding='latin1')
+        print(opt_pars)
         kk          = opt_pars['kk']       
         knn_pwr     = opt_pars['knn_pwr'] 
         scale_pwr   = opt_pars['scale_pwr'] 
@@ -131,18 +137,35 @@ class SynFcstGenerator:
         fit_start = max(hcst_dtg[0],obs_fwd_dtg[0])
         fit_end = min(hcst_dtg[-1],obs_fwd_dtg[-1])
 
+        # convert to avoid issues!
+        obs_fwd_dtg = pd.to_datetime(obs_fwd_dtg,utc=True).to_numpy(dtype="datetime64[us]")
+        hcst_dtg = pd.to_datetime(hcst_dtg,utc=True).to_numpy(dtype="datetime64[us]")
+        bad_forcs = pd.to_datetime(bad_forcs,utc=True).to_numpy(dtype="datetime64[us]")
+
         ixx_fit = pd.date_range(fit_start, fit_end, freq="D").to_numpy(dtype="datetime64[us]")
 
+        print("full range available for hindcast: %s to %s" % (fit_start, fit_end))
+
         if mp.fit_gen_strategy == 'specify':
-            fit_dates = pd.date_range(st_fit, en_fit, freq="D").to_numpy(dtype="datetime64[us]")
+            fit_dates = pd.date_range(mp.st_fit, mp.en_fit, freq="D").to_numpy(dtype="datetime64[us]")
             if fit_dates[0] < ixx_fit[0] or fit_dates[-1] > ixx_fit[-1]:
                 raise ValueError("Specified fit dates outside available hindcast/obs_fwd dataset")
             ixx_fit = fit_dates
+        print("\t using hindcasts from %s to %s" % (fit_start, fit_end))
 
+        #print(obs_fwd_dtg)
+        #print(ixx_fit)
+        #print("check obs_fwd_dtg and ixx_fit?")
+        #print(np.isin(obs_fwd_dtg,ixx_fit))
         #index synthetic generation arrays
         #arrays for calibration (fit) dataset observation and hindcast pairs
         obs_fwd_fit = obs_fwd[site_idx,np.isin(obs_fwd_dtg,ixx_fit),:]
+        print(obs_fwd_fit.shape)
+        #print(obs_fwd_fit)
         hcst_fit = hcst[site_idx,np.isin(hcst_dtg,ixx_fit),:,:]
+        print(hcst_fit.shape)
+        #print(np.isin(hcst_dtg,ixx_fit))
+        #print(hcst_fit)
 
         #calculate a daily mean across obs_data (used to concatenate additional days to the synthetic events in section 5 below)
         obs_dtg = pd.to_datetime(obs_fwd_dtg)
@@ -151,11 +174,15 @@ class SynFcstGenerator:
         for i in range(len(dly_mean)):
             dowy_idx = np.where(dowy_obs == i)
             dly_mean[i] = np.mean(obs_fwd[site_idx,dowy_idx,0])
+        # Screen out missing values
+        dly_mean[dly_mean < 0] = 0
+        #print(dly_mean)
 
         #remove any bad forecast days from the calibration (fit) datasets
-        rmv_idx = np.isin(ixx_fit,bad_forcs)
-        obs_fwd_fit = np.delete(obs_fwd_fit,rmv_idx,axis=0)
-        hcst_fit = np.delete(hcst_fit,rmv_idx,axis=0)
+        if mp.remove_bad_forecasts:
+            rmv_idx = np.isin(ixx_fit,bad_forcs)
+            obs_fwd_fit = np.delete(obs_fwd_fit,rmv_idx,axis=0)
+            hcst_fit = np.delete(hcst_fit,rmv_idx,axis=0)
 
         #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # 5. Read the HEC-WAT hydrologic sample DSS output file, extract 'n_events' synthetic hydrologic event, and format for synthetic forecast generation
@@ -190,6 +217,7 @@ class SynFcstGenerator:
         dtg = pd.to_datetime(data.times)
         flow_kcfs = data.values / 1000
 
+        ## TODO: move this out to WAT preprocessor
         #configure data to daily timeseries aggregated across 12 - 12 UTC
         dtg_shift = dtg + pd.Timedelta(hours=12)                #shifting forward by 12 hours allows aggregation function to aggregate from 12-12 GMT
         flow_series = pd.Series(flow_kcfs, index=dtg_shift)
@@ -201,6 +229,7 @@ class SynFcstGenerator:
         #extract each of the 50 synthetic events from the DSS file and save to an 'obs_fwd' configured array
         #array to store obs_fwd arrays
         obs_fwd_gen_mat = np.full((n_events,len(flow_daily),mp.max_lds+1),np.nan,dtype=np.float64)
+        #print(obs_fwd_gen_mat.shape)
         #dictionary to store the date/time sequence for each synthetic event
         fcst_issue_dates = {}
         for i in range(n_events):
@@ -212,19 +241,25 @@ class SynFcstGenerator:
             data = dss.get(event_dss_pathname)
             dtg = pd.to_datetime(data.times)
             flow_kcfs = data.values / 1000
+            print(("event %d: dtg: %d" % (i, len(dtg))))
 
             #configure data to daily timeseries aggregated across 12 - 12 UTC
             dtg_shift = dtg + pd.Timedelta(hours=12)
             flow_series = pd.Series(flow_kcfs, index=dtg_shift)
             flow_daily = flow_series.resample("D").mean()
             reindex = flow_daily.index - pd.Timedelta(hours=12)
+            print(("event %d: flow_daily: %d" % (i, len(flow_daily))))
+
             
             #add 'max_lds' number of days of daily mean to each synthetic obs sequence to support 'obs_fwd' generation across the entire synthetic sequence
             ext_dates = pd.date_range(pd.to_datetime(flow_daily.index[-1]) + pd.Timedelta(hours=12),pd.to_datetime(flow_daily.index[-1]) + pd.Timedelta(hours=(mp.max_lds-1)*24+12),freq='D')
             dowy_concat = np.array([water_day(d,calendar.isleap(d.year)) for d in ext_dates])
+            #print(dowy_concat)
             concat_flows = dly_mean[dowy_concat] #
+            print(concat_flows)
             flow_daily_concat = np.concat((flow_daily.values,concat_flows))
-                                        
+            print(("event %d: flow_daily_concat: %d" % (i, len(flow_daily_concat))))     
+
             fcst_issue_dates[evt_num] = reindex
             obs_fwd_gen_mat[i,:,:] = obs_fwd_fun(flow_daily_concat,mp.max_lds)
 
@@ -236,13 +271,20 @@ class SynFcstGenerator:
         obs_fwd_fit[obs_fwd_fit==0.0] = min_nzero
         obs_fwd_gen_mat[obs_fwd_gen_mat==0.0] = min_nzero
 
+
         #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # 6. Setup the synthetic forecast generation function and run in parallel to generate synthetic forecasts for each HEC-WAT synthetic event
         ## TODO - can this be pulled out?
         #function to generate synthetic forecast samples and save an output .npz file for each sample
         def syn_gen_par(i):
+            #print(i)
+            #print(obs_fwd_fit.shape)
+            #print(obs_fwd_gen_mat[i,:,:].shape)
+            ## TODO: internet said this would be happier with 1x1 NP arrays, for example
+            # Seed = np.array([int(100*self.compute_options.event_seed)], dtype=np.float64)
+            # kk = np.array([kk], dtype=np.uint32)
             out = syn_gen_hec_wat_fra(
-                seed=i,                    
+                seed=int(self.compute_options.event_seed*1000),                    
                 kk=kk,                                  
                 knn_pwr=knn_pwr,                              
                 scale_pwr=scale_pwr,                            
@@ -257,14 +299,18 @@ class SynFcstGenerator:
             )
             
             lc = self.compute_options.lifecycle
-            outfile = './syn-forecast_site=%s_lifecycle=%s_event=%s.npz' %(mp.gen_site,lc,i+1)
-            np.savez(out_dir/outfile,syn_fcst=out)
+            #outfile = './syn-forecast_site=%s_lifecycle=%s_event=%s.npz' %(mp.gen_site,lc,i+1)
+            #np.savez(out_dir/outfile,syn_fcst=out)
 
             return out
 
+        for i in range(n_events):
+            obs_mat_shape = obs_fwd_gen_mat[i,:,:].shape
+            print(("event %d: obs_mat_shape: %s" % (i, str(obs_mat_shape))))
+
         #run synthetic generation code in parallel; par_out is a list of length 'n_events' where each list element is a n_obs x n_leads+1 x n_ens array
         #Note: the array is configured to have index 0 in dimension 2 as the day t observation for compatibility with HEC-WAT; this is why dimension 2 is n_leads+1
-        par_out = Parallel(n_jobs=workers)(delayed(syn_gen_par)(i) for i in range(n_events))
+        par_out = Parallel(n_jobs=workers)(delayed(syn_gen_par)(np.array(i)) for i in range(n_events))
 
         #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # 7. Output both the aggregated daily obs file and the synthetic forecast sequence to a DSS file for each HEC-WAT synthetic event
@@ -283,6 +329,7 @@ class SynFcstGenerator:
             outdss = Path(self.compute_options.outDirectory, dss_outfile)
             
             fPartSuffix = self.compute_options.outFPart.split("|")[-1]
+            fPartSuffix = "" # TODO Fix this
 
             #output each daily-aggregated synthetic observation to a DSS file
             obs_outpath = "/".join(["", part_dict["a"], part_dict["b"], part_dict["c"] + "-synobs", "", "1Day", "C:%s|%s" % (evt_num, fPartSuffix), ""])
@@ -315,7 +362,7 @@ class SynFcstGenerator:
                         fPart = "C:%06d|T:%s|V:%s|%s" % (
                             ensembleMemberID,       # ensemble member number
                             fcstIssueDate_short, 
-                            fcstIssueDate,          # for a study, the T/V values are identical.
+                            fcstIssueDate,          # for a study, the T/V values are identical other than _seconds_
                             fPartSuffix                   # F part label from json file
                             )
                         dssOutPath = "/".join(["",a,b,c,d,ePart,fPart,""])          #combine all part labels for the record name
