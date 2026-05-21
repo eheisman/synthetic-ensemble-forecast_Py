@@ -6,7 +6,7 @@ from hec.script import Constants
 from hec.hecmath import TimeSeriesMath
 
 # new setting to run once per lifecycle.
-PER_LIFECYLCE_COMPUTE = True
+PER_LIFECYLCE_COMPUTE = False
 
 
 #scriptConfigFilename = "synForecasts/forecastConfig.json"
@@ -116,7 +116,10 @@ def writeScriptConfig(alt, opts):
 		locDict = dict()
 		locDict["name"] = loc.getName()
 		locDict["param"] = loc.getParameter()
-		locDict["dss_pathname"] = loc.getLinkedToLocation().getDssPath()
+		locPath = loc.getDssPath()
+		locDict["dss_pathname"] = locPath.replace("alt:ap:Scripting-SynFcst", opts.getFpart())
+		# this is the input location from the HS model 
+		#loc.getLinkedToLocation().getDssPath()
 		alt.addComputeMessage("linked input \"%s/%s\" to %s" % (locDict["name"], locDict["param"], locDict["dss_pathname"]))
 		config["Locations"].append(locDict)
 
@@ -134,6 +137,7 @@ def writeScriptConfig(alt, opts):
 def createDailyAverageForForecasts(alt, opts):
 	"""
 	"""
+	# TODO: do this for all events! otherwise we have to generate forecasts one at a time.
 	for inputLoc in alt.getInputDataLocations():
 		inputTSM = TimeSeriesMath(alt.loadTimeSeries(inputLoc))
 		# see https://www.hec.usace.army.mil/confluence/dssdocs/dssvueum/scripting/math-functions
@@ -158,9 +162,9 @@ def createDailyAverageForForecasts(alt, opts):
 ##
 def computeAlternative(currentAlternative, computeOptions):
 	currentAlternative.addComputeMessage("Computing ScriptingAlternative:" + currentAlternative.getName())
-	if not computeOptions.isNewLifecycle() and PER_LIFECYLCE_COMPUTE:
-		currentAlternative.addComputeMessage("This already computed in event 1. Not recomputing.")
-		return True
+	# if PER_LIFECYLCE_COMPUTE and computeOptions.getCurrentEventNumber() > 1:
+	#	currentAlternative.addComputeMessage("This already computed in event 1. Not recomputing.")
+	#	return True
 	# write configuration for script - tells it compute timewindow and locations
 	configFile = writeScriptConfig(currentAlternative, computeOptions)
 
@@ -173,7 +177,7 @@ def computeAlternative(currentAlternative, computeOptions):
 	# run R compute function here 
 	#rScriptFile = None #r"synForecasts\wat_launcher.R"
 	#currentAlternative.addComputeMessage(callR(rScriptFile, computeOptions, [configFile, dataFile], relativeScript=True))
-	resultsMessage = generateSynthetics(computeOptions, configFile)
+	resultsMessage = '' #generateSynthetics(computeOptions, configFile)
 	currentAlternative.addComputeMessage(resultsMessage)
 
 	return True
