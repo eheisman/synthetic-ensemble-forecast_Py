@@ -6,13 +6,19 @@
   <ScriptFile>scripting/GenerateSynthetics.py</ScriptFile>
   <TimeStep>1DAY</TimeStep>
   <DataLocations>
-    <DataLocation Name="Prado" Class="hec2.model.DataLocation" DssPath="//Prado/Flow//15MIN/alt:ap:Scripting-SynFcsts/" ComputeType="Computed" Model="Scripting-Hydrograph_unscaler" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
-      <ModelAlternative Name="SynFcsts" Program="Scripting" />
+    <DataLocation Name="HHD" Class="hec2.model.DataLocation" DssPath="//HHD/Flow//1DAY/alt:ap:Scripting-SynFcst/" ComputeType="Computed" Model="Hydrologic Sampling-HHD_Auburn" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcst" Program="Scripting" />
       <DownStreamLocation>
-        <DataLocation Name="Prado_IN-combined" Class="hec2.model.DataLocation" DssPath="//Prado_IN-combined/Flow//15MIN/C:000050|HFO:FRA_50yr:Scripting-Hydrograph_unscaler/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
-          <ModelAlternative Name="Hydrograph_unscaler" Program="Scripting" />
+        <DataLocation Name="RES_GRN_HHD_in" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in/FLOW//1Hour/C:000005|TestAlt:FcstTest_5:HydroSampl-HHD_Auburn/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+          <ModelAlternative Name="HHD_Auburn" Program="Hydrologic Sampling" />
         </DataLocation>
       </DownStreamLocation>
     </DataLocation>
   </DataLocations>
+  <OutputDataLocations>
+    <DataLocation Name="HHD" Class="hec2.model.DataLocation" DssPath="//HHD/Flow//1DAY/C:000005|TestAlt:FcstTest_5:Scripting-SynFcst/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcst" Program="Scripting" />
+    </DataLocation>
+  </OutputDataLocations>
 </ScriptingAlt>
+
