@@ -161,7 +161,7 @@ class SynFcstGenerator:
         #arrays for calibration (fit) dataset observation and hindcast pairs
         obs_fwd_fit = obs_fwd[site_idx,np.isin(obs_fwd_dtg,ixx_fit),:]
         print(obs_fwd_fit.shape)
-        #print(obs_fwd_fit)
+        print(obs_fwd_fit)
         hcst_fit = hcst[site_idx,np.isin(hcst_dtg,ixx_fit),:,:]
         print(hcst_fit.shape)
         #print(np.isin(hcst_dtg,ixx_fit))
@@ -215,15 +215,16 @@ class SynFcstGenerator:
         data = dss.get(dss_pathname)
         print(data.start_date,data.units,data.data_type)
         dtg = pd.to_datetime(data.times)
-        flow_kcfs = data.values / 1000
+        flow_kcfs = data.values #/ 1000
 
         ## TODO: move this out to WAT preprocessor
         #configure data to daily timeseries aggregated across 12 - 12 UTC
         dtg_shift = dtg + pd.Timedelta(hours=12)                #shifting forward by 12 hours allows aggregation function to aggregate from 12-12 GMT
         flow_series = pd.Series(flow_kcfs, index=dtg_shift)
         flow_daily = flow_series.resample("D").mean()           #aggregate to daily mean values
-        #reindex = flow_daily.index - pd.Timedelta(hours=12)     #shifting 12 hours back to original timing to ensure output file is consistent with HEC-WAT input
-        #final_flow_daily = pd.Series(flow_daily.values,index=reindex)
+        # TODO THIS DOESN'T GET USED
+        reindex = flow_daily.index - pd.Timedelta(hours=12)     #shifting 12 hours back to original timing to ensure output file is consistent with HEC-WAT input
+        final_flow_daily = pd.Series(flow_daily.values,index=reindex)
 
         # READ DSS
         #extract each of the 50 synthetic events from the DSS file and save to an 'obs_fwd' configured array
@@ -240,7 +241,7 @@ class SynFcstGenerator:
             print(event_dss_pathname)
             data = dss.get(event_dss_pathname)
             dtg = pd.to_datetime(data.times)
-            flow_kcfs = data.values / 1000
+            flow_kcfs = data.values  #/ 1000
             print(("event %d: dtg: %d" % (i, len(dtg))))
 
             #configure data to daily timeseries aggregated across 12 - 12 UTC
@@ -255,11 +256,11 @@ class SynFcstGenerator:
             ext_dates = pd.date_range(pd.to_datetime(flow_daily.index[-1]) + pd.Timedelta(hours=12),pd.to_datetime(flow_daily.index[-1]) + pd.Timedelta(hours=(mp.max_lds-1)*24+12),freq='D')
             dowy_concat = np.array([water_day(d,calendar.isleap(d.year)) for d in ext_dates])
             #print(dowy_concat)
-            concat_flows = dly_mean[dowy_concat] #
+            concat_flows = dly_mean[dowy_concat]
             print(concat_flows)
             flow_daily_concat = np.concat((flow_daily.values,concat_flows))
             print(("event %d: flow_daily_concat: %d" % (i, len(flow_daily_concat))))     
-
+            print(flow_daily_concat)
             fcst_issue_dates[evt_num] = reindex
             obs_fwd_gen_mat[i,:,:] = obs_fwd_fun(flow_daily_concat,mp.max_lds)
 
@@ -334,7 +335,7 @@ class SynFcstGenerator:
             #output each daily-aggregated synthetic observation to a DSS file
             obs_outpath = "/".join(["", part_dict["a"], part_dict["b"], part_dict["c"] + "-synobs", "", "1Day", "C:%s|%s" % (evt_num, fPartSuffix), ""])
             times = fcst_issue_dates[evt_num]
-            obs_values = obs_fwd_gen_mat[i,:,0] * 1000      #reset to cfs
+            obs_values = obs_fwd_gen_mat[i,:,0] #* 1000      #reset to cfs
             obsValuesAsList = obs_values.tolist()
             outTimeSeriesForThisTrace = RegularTimeSeries.create(obsValuesAsList, 
                 data_type='PER-AVER',times=times, start_date=fcst_issue_dates[evt_num][0], interval='1Day', units="cfs", path=obs_outpath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 
@@ -366,7 +367,7 @@ class SynFcstGenerator:
                             fPartSuffix                   # F part label from json file
                             )
                         dssOutPath = "/".join(["",a,b,c,d,ePart,fPart,""])          #combine all part labels for the record name
-                        traceValues = par_out[i][j,:,k] * 1000                      #reset values to kcfs
+                        traceValues = par_out[i][j,:,k] #* 1000                      #reset values to kcfs
                         traceValuesAsList = traceValues.tolist()                    #RegularTimeSeries requires the flow values as a list
                         outTimeSeriesForThisTrace = RegularTimeSeries.create(traceValuesAsList, 
                             data_type='PER-AVER',times=times, start_date=fcst_issue_dates[evt_num][j], interval=ePart, units="cfs", path=dssOutPath)   # this assumes traceValuesAsList is a list of flows, start_date is the date fo the first timestep in the sequence 

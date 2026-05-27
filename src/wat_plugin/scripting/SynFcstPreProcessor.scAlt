@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptingAlt Name="SynFcstPreProcessor">
+  <Description />
+  <ScriptFile>scripts/SynFcstPreProcessor.py</ScriptFile>
+  <TimeStep>1DAY</TimeStep>
+  <DataLocations>
+    <DataLocation Name="J_GRN_AUB" Class="hec2.model.DataLocation" DssPath="//J_GRN_AUB/Flow-Local//1DAY/alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Model="Hydrologic Sampling-HHD_Auburn" Parameter="Flow-Local" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+      <DownStreamLocation>
+        <DataLocation Name="J_GRN_AUB" Class="hec2.model.DataLocation" DssPath="//J_GRN_AUB/FLOW//1Hour/C:000005|TestAlt:FcstTest_5:HydroSampl-HHD_Auburn/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+          <ModelAlternative Name="HHD_Auburn" Program="Hydrologic Sampling" />
+        </DataLocation>
+      </DownStreamLocation>
+    </DataLocation>
+    <DataLocation Name="RES_GRN_HHD_in" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in/Flow//1DAY/alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Model="Hydrologic Sampling-HHD_Auburn" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+      <DownStreamLocation>
+        <DataLocation Name="RES_GRN_HHD_in" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in/FLOW//1Hour/C:000005|TestAlt:FcstTest_5:HydroSampl-HHD_Auburn/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+          <ModelAlternative Name="HHD_Auburn" Program="Hydrologic Sampling" />
+        </DataLocation>
+      </DownStreamLocation>
+    </DataLocation>
+  </DataLocations>
+  <OutputDataLocations>
+    <DataLocation Name="RES_GRN_HHD_in" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in/Flow//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="J_GRN_AUB" Class="hec2.model.DataLocation" DssPath="//J_GRN_AUB/Flow-Local//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow-Local" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="RES_GRN_HHD_in:FMA=2 VOL=" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in:FMA=2 VOL=/Flow//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="RES_GRN_HHD_in:FMA=3 VOL=" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in:FMA=3 VOL=/Flow//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="RES_GRN_HHD_in:FMA=5 VOL=" Class="hec2.model.DataLocation" DssPath="//RES_GRN_HHD_in:FMA=5 VOL=/Flow//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="J_GRN_AUB:FMA=2 VOL=" Class="hec2.model.DataLocation" DssPath="//J_GRN_AUB:FMA=2 VOL=/Flow-Local//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow-Local" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="J_GRN_AUB:FMA=3 VOL=" Class="hec2.model.DataLocation" DssPath="//J_GRN_AUB:FMA=3 VOL=/Flow-Local//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow-Local" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+    <DataLocation Name="J_GRN_AUB:FMA=5 VOL=" Class="hec2.model.DataLocation" DssPath="//J_GRN_AUB:FMA=5 VOL=/Flow-Local//1DAY/C:000005|alt:ap:Scripting-SynFcstPreProcessor/" ComputeType="Computed" Parameter="Flow-Local" OutOfDate="false" PrevModelIndex="0">
+      <ModelAlternative Name="SynFcstPreProcessor" Program="Scripting" />
+    </DataLocation>
+  </OutputDataLocations>
+</ScriptingAlt>
+
